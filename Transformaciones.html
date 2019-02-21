@@ -3,7 +3,7 @@
 
 <head>
     <title>WebGL transformations</title>
-
+    <style type="text/css"> H1 { text-align: center}</style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"></script>
 
     <script id="shaderVs" type="x-shader/x-vertex">
@@ -169,10 +169,26 @@
 
 </head>
 
+<h1>Transformaciones en un triangulo</h1>
+
 <body onload="init()">
 <canvas id="myCanvas" width="640" height="480"></canvas>
 <br>
 Step: <input type="text" value="0.01" id="step">
+
+<style type="text/css"> body {text-align: center}</style>
 </body>
 
+<pre>
+      o Flecha izquierda: Traslación a la izquierda del eje X (el triángulo se mueve la izquierda)
+o Flecha derecha: Traslación a la derecha del eje X (el triángulo se mueve la derecha)
+   o Flecha arriba: Traslación hacia arriba en el eje Y (el triángulo se mueve hacia arriba)
+o Flecha abajo: Traslación hacia abajo en el eje Y (el triángulo se mueve hacia abajo)
+o Tecla RePag (PgUp): Aumento de escala (el triángulo se hace más grande)
+       o Tecla AvPag (PgDown): Contracción de escala (el triángulo se hace más pequeño)
+    o Tecla Inicio (Home): Giro positivo según el eje X
+o Tecla Fin (End): Giro negativo según el eje X
+
+El valor del cambio para cada una de las transformaciones será configurable desde la interfaz de usuario de la página web.
+En el campo de texto "Step" que será leído desde JavaScript para averiguar el valor de cambio de la transformación.</pre>
 </html>
