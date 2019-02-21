@@ -5,4 +5,4 @@ Visualizacion de programas:
 https://alejandroeslo.github.io/3D/ColoresCanvas.html
 
 2)Transformaciones en triangulo: 
-https://alejandroeslo.github.io/3D/transformaciones.html
+https://alejandroeslo.github.io/3D/Transformaciones.html
