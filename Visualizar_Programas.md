@@ -6,3 +6,6 @@ https://alejandroeslo.github.io/3D/ColoresCanvas.html
 
 2)Transformaciones en triangulo: 
 https://alejandroeslo.github.io/3D/Transformaciones.html
+
+3)Proyecciones en un cubo: 
+https://alejandroeslo.github.io/3D/Proyecciones.html
