@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>TEXTURAS</title>
+</head>
+
+<script id="shaderVs" type="x-shader/x-vertex">
+    attribute vec4 a_Position;
+    attribute vec2 a_TexCoord;
+    varying vec2 v_TexCoord;
+    void main(void) {
+        gl_Position = a_Position;
+        v_TexCoord = a_TexCoord;
+    }
+</script>
+
+<script id="shaderFs" type="x-shader/x-fragment">
+    precision highp float;
+    precision mediump float;
+    uniform sampler2D u_Sampler;
+    varying vec2 v_TexCoord;
+    void main(void) {
+        gl_FragColor = texture2D(u_Sampler, v_TexCoord);//textura en 2D(textura definida en javascrip,coordenadas)
+    }
+</script>
+
+<script>
+    function init() {
+        // Get canvas object from the DOM
+        var canvas = document.getElementById("myCanvas");
+
+        // Init WebGL context
+        var gl = canvas.getContext("webgl");
+        if (!gl) {
+            console.log("Failed to get the rendering context for WebGL");
+            return;
+        }
+
+        // Init shaders
+        var vs = document.getElementById('shaderVs').innerHTML;
+        var fs = document.getElementById('shaderFs').innerHTML;
+        if (!initShaders(gl, vs, fs)) {
+            console.log('Failed to intialize shaders.');
+            return;
+        }
+
+        // Init vertices and texture coordinates
+        initVertexBuffers(gl);
+
+        // Set clear color (black)
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+
+        // Init textures
+        initTexturesAndDraw(gl);
+    }
+
+    function initTexturesAndDraw(gl) {
+        var image = new Image();
+        // Carga asincrona de la imagen
+        image.src = 'sky.jpg'; // equivalente a poner ./sky.jpg
+        image.onload = function () {
+            // loadTexture(gl, nombre_variable_fragment_shader, objeto para crear la textura, unidad de textura(numero de imagenes que vamso a usar), girar imagen en eje Y o no)
+            loadTexture(gl, "u_Sampler", image, 0, true);
+            drawScene(gl);
+        };
+
+    }
+
+    function loadTexture(gl, samplerUniform, image, unitNumber, flip) {
+        // Giro de la imagen sobre el eje Y
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flip);
+
+        // Variable para leer los botones de entrada
+        var wrap_sValue = document.querySelector('input[name="wrap_s"]:checked').value;
+        var wrap_tValue = document.querySelector('input[name="wrap_t"]:checked').value;
+        // Activate and configure texture
+        gl.activeTexture(gl.TEXTURE0 + unitNumber);
+        gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+        //Creamos las opciones para nuestros botones
+        // if anidado con elseif
+        // (if)variable + ? + su valor => (elsif)sino : => metemos la otra condicion variable + ? + su valor + :(else) utlimo valor
+        var s = (wrap_sValue=="Repeat") ? gl.REPEAT : ((wrap_sValue=="Mirrored_repeat") ? gl.MIRRORED_REPEAT : gl.CLAMP_TO_EDGE);
+        var t = (wrap_tValue=="Repeat") ? gl.REPEAT : ((wrap_tValue=="Mirrored_repeat") ? gl.MIRRORED_REPEAT : gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, s);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, t);
+
+        /*Otra forma mas visual de hacerlo
+        switch (wrap_sValue) {
+          case ('Repeat'):
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+          break;
+          case ('Mirrored_repeat'):
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
+          break;
+          case ('Clamp_to_edge'):
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+          break;
+        }
+        switch (wrap_tValue) {
+          case ('Repeat'):
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+          break;
+          case ('Mirrored_repeat'):
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
+          break;
+          case ('Clamp_to_edge'):
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+          break;
+        }
+        */
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+
+        // Set texture to the sampler
+        var fragmentSamplerUniform = gl.getUniformLocation(gl.program, samplerUniform);
+        gl.uniform1i(fragmentSamplerUniform, unitNumber);
+    }
+
+    function drawScene(gl) {
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        // Dibujamos 4 vertices usando TRIANGLE_STRIP
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+        //Dibujar en bucle para ir cambiando a los distintos modos (metemos el function()para poder meter el parametro gl en nuestra funcion)
+        requestAnimationFrame(function(){initTexturesAndDraw(gl)});
+    }
+
+    function initVertexBuffers(gl) {
+        // Vertices (x, y) and texture coordinates (s, t)
+        // Transaladamos nuestras coordenadas de la imagen x,y a las coordenadas correspondientes s,t(pag33)
+        var verticesAndTextures = [
+            -0.5, 0.5, -1.0, 2.0, // top-left image corner
+            -0.5, -0.5, -1.0, -1.0, // bottom-left image corner
+            0.5, 0.5, 2.0, 2.0, // top-right image corner
+            0.5, -0.5, 2.0, -1.0, // bottom-right image corner
+        ];
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verticesAndTextures), gl.STATIC_DRAW);
+
+        var vertexPositionAttribute = gl.getAttribLocation(gl.program, "a_Position");
+        gl.enableVertexAttribArray(vertexPositionAttribute);
+        gl.vertexAttribPointer(vertexPositionAttribute, 2, gl.FLOAT, false, 4 * 4, 0);
+
+        // Damos valor a la textura
+        var vertexTextureAttribute = gl.getAttribLocation(gl.program, "a_TexCoord");
+        gl.enableVertexAttribArray(vertexTextureAttribute);
+        gl.vertexAttribPointer(vertexTextureAttribute, 2, gl.FLOAT, false, 4 * 4, 4 * 2);
+    }
+
+    function initShaders(gl, vs_source, fs_source) {
+        // Compile shaders
+        var vertexShader = makeShader(gl, vs_source, gl.VERTEX_SHADER);
+        var fragmentShader = makeShader(gl, fs_source, gl.FRAGMENT_SHADER);
+
+        // Create program
+        var glProgram = gl.createProgram();
+
+        // Attach and link shaders to the program
+        gl.attachShader(glProgram, vertexShader);
+        gl.attachShader(glProgram, fragmentShader);
+        gl.linkProgram(glProgram);
+        if (!gl.getProgramParameter(glProgram, gl.LINK_STATUS)) {
+            alert("Unable to initialize the shader program");
+            return false;
+        }
+
+        // Use program
+        gl.useProgram(glProgram);
+        gl.program = glProgram;
+
+        return true;
+    }
+
+    function makeShader(gl, src, type) {
+        var shader = gl.createShader(type);
+        gl.shaderSource(shader, src);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            alert("Error compiling shader: " + gl.getShaderInfoLog(shader));
+            return;
+        }
+        return shader;
+    }
+</script>
+
+<body onload="init()">
+    <canvas id="myCanvas" width="640" height="480"></canvas><br>
+    <b>Wrap S</b>
+    <input type="radio" name="wrap_s" value="Repeat" checked> Repeat
+    <input type="radio" name="wrap_s" value="Mirrored_repeat"> Mirrored repeat
+    <input type="radio" name="wrap_s" value="Clamp_to_edge"> Clamp to edge<br>
+    <b>Wrap T</b>
+    <input type="radio" name="wrap_t" value="Repeat" checked> Repeat
+    <input type="radio" name="wrap_t" value="Mirrored_repeat"> Mirrored repeat
+    <input type="radio" name="wrap_t" value="Clamp_to_edge"> Clamp to edge<br>
+</body>
+
+</html>
