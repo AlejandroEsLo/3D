@@ -11,4 +11,4 @@ https://alejandroeslo.github.io/3D/Transformaciones.html
 https://alejandroeslo.github.io/3D/Proyecciones.html
 
 3)Texturas: 
-https://alejandroeslo.github.io/3D/texturas.html
+https://alejandroeslo.github.io/3D/Texturas.html
